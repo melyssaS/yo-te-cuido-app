@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "148501590218",
+    "project_id": "yo-te-cuido-dc3c6",
+    "storage_bucket": "yo-te-cuido-dc3c6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148501590218:android:a79bb007e3914cbe310433",
+        "android_client_info": {
+          "package_name": "com.example.yo_te_cuido"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "148501590218-o1f57m98dr9jm1eobnh0cbpnsaefusp4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjVdsjoqiuWstCxq65kWyLKwoPZK1fg0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "148501590218-o1f57m98dr9jm1eobnh0cbpnsaefusp4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
