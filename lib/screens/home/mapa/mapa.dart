@@ -17,6 +17,8 @@ class _MapaState extends State<Mapa> {
   Completer<GoogleMapController> _controller = Completer();
   double _latitud;
   double _longitud;
+  double _latitudR;
+  double _longitudR;
   final num _RADIUS = 6371e3;
   double PI = math.pi;
 
@@ -32,8 +34,10 @@ class _MapaState extends State<Mapa> {
             // updateLocation(userData.latitud, userData.longitud);
             _latitud = double.parse(userData.latitud);
             _longitud = double.parse(userData.longitud);
+            _latitudR = double.parse(userData.rango_latitud);
+            _longitudR = double.parse(userData.rango_longitud);
             print(distanceBetweenTwoGeoPoints(
-                LatLng(_latitud, _longitud), LatLng(_latitud, _longitud)));
+                LatLng(_latitud, _longitud), LatLng(_latitudR, _longitudR)));
             initLocation();
             return GoogleMap(
               mapType: MapType.hybrid,

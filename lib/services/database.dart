@@ -10,12 +10,23 @@ class DatabaseService {
       Firestore.instance.collection('brews');
 
   Future<void> updateUserData(
-      String latitud, String longitud, int rango, String imei) async {
+      String latitud,
+      String longitud,
+      String mapa,
+      int rango,
+      String imei,
+      bool notificacion,
+      String rango_longitud,
+      String rango_latitud) async {
     return await brewCollection.document(uid).setData({
       'latitud': latitud,
       'longitud': longitud,
+      'mapa': mapa,
       'rango': rango,
-      'imei': imei
+      'imei': imei,
+      'notificacion': notificacion,
+      'rango_longitud': rango_longitud,
+      'rango_latitud': rango_latitud
     });
   }
 
@@ -23,10 +34,14 @@ class DatabaseService {
   UserData _userDataFromSnapshot(DocumentSnapshot snapshot) {
     return UserData(
         uid: uid,
-        longitud: snapshot.data['longitud'],
         latitud: snapshot.data['latitud'],
+        longitud: snapshot.data['longitud'],
+        mapa: snapshot.data['mapa'],
         rango: snapshot.data['rango'],
-        imei: snapshot.data['imei']);
+        imei: snapshot.data['imei'],
+        notificacion: snapshot.data['notificacion'],
+        rango_longitud: snapshot.data['rango_longitud'],
+        rango_latitud: snapshot.data['rango_latitud']);
   }
 
   // get user doc stream
