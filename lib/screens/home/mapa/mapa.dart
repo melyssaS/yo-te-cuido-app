@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:yo_te_cuido/models/user.dart';
 import 'package:yo_te_cuido/services/database.dart';
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:yo_te_cuido/main.dart';
 
 class Mapa extends StatefulWidget {
   // Mapa({Key key}) : super(key: key);
@@ -21,6 +23,7 @@ class _MapaState extends State<Mapa> {
   double _longitudR;
   final num _RADIUS = 6371e3;
   double PI = math.pi;
+  Set<Circle> circles;
 
   @override
   Widget build(BuildContext context) {
@@ -31,29 +34,41 @@ class _MapaState extends State<Mapa> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             UserData userData = snapshot.data;
-            // updateLocation(userData.latitud, userData.longitud);
             _latitud = double.parse(userData.latitud);
             _longitud = double.parse(userData.longitud);
-            _latitudR = double.parse(userData.rango_latitud);
-            _longitudR = double.parse(userData.rango_longitud);
-            print(distanceBetweenTwoGeoPoints(
-                LatLng(_latitud, _longitud), LatLng(_latitudR, _longitudR)));
+            circles = null;
+            if (double.parse(userData.rango_latitud, (e) => null) != null) {
+              _latitudR = double.parse(userData.rango_latitud);
+              _longitudR = double.parse(userData.rango_longitud);
+              distanceBetweenTwoGeoPoints(LatLng(_latitud, _longitud),
+                  LatLng(_latitudR, _longitudR), userData.rango);
+              print('hola');
+              circles = Set.from([
+                Circle(
+                    circleId: CircleId('Zona Segura'),
+                    center: LatLng(_latitudR, _longitudR),
+                    radius: userData.rango.toDouble(),
+                    strokeColor: Colors.blue,
+                    strokeWidth: 5,
+                    fillColor: Color.fromRGBO(0, 192, 255, 0.5))
+              ]);
+            }
             initLocation();
             return GoogleMap(
-              mapType: MapType.hybrid,
-              initialCameraPosition: CameraPosition(
-                target: LatLng(_latitud, _longitud),
-                zoom: 18.0,
-              ),
-              markers: Set.of([
-                Marker(
-                    markerId: MarkerId('Posicion'),
-                    position: LatLng(_latitud, _longitud))
-              ]),
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-              },
-            );
+                mapType: MapType.hybrid,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(_latitud, _longitud),
+                  zoom: 18.0,
+                ),
+                markers: Set.of([
+                  Marker(
+                      markerId: MarkerId('Posicion'),
+                      position: LatLng(_latitud, _longitud))
+                ]),
+                onMapCreated: (GoogleMapController controller) {
+                  _controller.complete(controller);
+                },
+                circles: circles);
           } else {
             return Center(child: CircularProgressIndicator());
           }
@@ -62,8 +77,6 @@ class _MapaState extends State<Mapa> {
 
   void initLocation() async {
     final GoogleMapController controller = await _controller.future;
-    print(_latitud);
-    print(_longitud);
     if (controller != null) {
       controller.animateCamera(CameraUpdate.newCameraPosition(
           new CameraPosition(
@@ -74,9 +87,39 @@ class _MapaState extends State<Mapa> {
     }
   }
 
+  void scheduleAlarm() async {
+    var scheduledNotificationDateTime =
+        DateTime.now().add(Duration(seconds: 10));
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'alarm_notif',
+      'alarm_notif',
+      'Channel for Alarm notification',
+      icon: 'logo',
+      sound: RawResourceAndroidNotificationSound('a_long_cold_sting'),
+      largeIcon: DrawableResourceAndroidBitmap('logo'),
+    );
+
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails(
+        sound: 'a_long_cold_sting.wav',
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true);
+
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.schedule(
+        0,
+        'ATENCION',
+        ' Se ha saido de la zona segura !',
+        scheduledNotificationDateTime,
+        platformChannelSpecifics);
+  }
+
   double degToRadian(final double deg) => deg * (PI / 180.0);
 
-  num distanceBetweenTwoGeoPoints(LatLng l1, LatLng l2, [num radius]) {
+  void distanceBetweenTwoGeoPoints(LatLng l1, LatLng l2, int rango,
+      [num radius]) {
     radius = radius ?? _RADIUS;
     num R = radius;
     num l1LatRadians = degToRadian(l1.latitude);
@@ -93,7 +136,10 @@ class _MapaState extends State<Mapa> {
             math.sin(lngRadiansDiff / 2);
     num c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     num distance = R * c;
-
-    return distance;
+    print(distance);
+    if (rango < distance) {
+      print('oh no');
+      scheduleAlarm();
+    }
   }
 }
